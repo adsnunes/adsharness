@@ -9,7 +9,7 @@ adsharness uses Python 3.11+ and static HTML, CSS, and JavaScript. The server pr
 - `static/`: interface, filters, editor, and interaction states.
 - `tests/`: synthetic files and HTTP requests on an ephemeral port.
 
-IDs derive from type, agent, path, and name. A skill present in multiple agents appears separately for each source; fingerprints support future content comparison. Different sources are not assumed to be interchangeable.
+IDs derive from type, agent, path, and name. Cards group sources by kind, case-insensitive name, and global/project scope. Provider filters select matching groups and open a matching source. Each source retains its own ID, tags, revision, and file; the detail selector chooses which source to read or edit. Grouping does not assert identical contents or synchronize edits. Card favorites apply to every source in the group; tags remain source-specific.
 
 Document writes validate revisions, create backups, and atomically replace files within the same directory. A lock serializes operations within an instance. External edits made before the check are detected; there is no cooperative lock with other editors, so a concurrent change after the check can still occur. Editing through symbolic links is blocked. Metadata uses the same atomic write mechanism; multiple instances should not share a data directory.
 

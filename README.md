@@ -6,8 +6,6 @@ A local workspace for organizing MCPs, skills, and instructions for Codex and An
 
 ## Screenshots
 
-Screenshots use synthetic demo data and contain no personal configurations or credentials.
-
 **Organize MCP servers, skills, and harness settings in one place.**
 
 ![adsharness overview with agent filters, favorites, and a local configuration inventory](docs/images/overview.png)
@@ -104,10 +102,6 @@ Optional browser smoke test (requires Playwright with Chromium installed in your
 Use English for interface text, identifiers, comments, errors, documentation, tests, and repository templates. Keep the product name lowercase: adsharness.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [docs/architecture.md](docs/architecture.md).
-
-## Publishing on GitHub
-
-The `.gitignore` excludes private settings, credentials, backups, environments, and generated artifacts. Before the first push, review `git status --short` and `git diff --cached`. Publish only source code and synthetic fixtures. The project includes CI, an MIT license, issue and PR templates, and contributor guidance. Packages are not published automatically.
 
 ## License
 

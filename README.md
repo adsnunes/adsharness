@@ -103,10 +103,6 @@ Use English for interface text, identifiers, comments, errors, documentation, te
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [docs/architecture.md](docs/architecture.md).
 
-## Publishing on GitHub
-
-The `.gitignore` excludes private settings, credentials, backups, environments, and generated artifacts. Before the first push, review `git status --short` and `git diff --cached`. Publish only source code and synthetic fixtures. The project includes CI, an MIT license, issue and PR templates, and contributor guidance. Packages are not published automatically.
-
 ## License
 
 MIT — see [LICENSE](LICENSE).

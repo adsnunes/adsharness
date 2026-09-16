@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>adsharness · Your agent workspace</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<aside>
+<a class="brand" href="/" aria-label="adsharness home">
+<span class="logo">a<span>•</span>
+</span>adsharness</a>
+<div class="workspace-label">YOUR CONTROL CENTER</div>
+<nav aria-label="Main navigation">
+<button data-view="all" class="active">◈ <span>Overview</span>
+</button>
+<button data-view="mcp">⌘ <span>MCP servers</span>
+</button>
+<button data-view="skill">◇ <span>Skill library</span>
+</button>
+<button data-view="harness">▤ <span>Harness and instructions</span>
+</button>
+<button data-view="favorites">☆ <span>Favorites</span>
+</button>
+</nav>
+<div class="sidebar-bottom">
+<span class="dot">
+</span> Local by design<p>Your environment. Your tools.<br>One place to organize it all.</p>
+<small>adsharness · v0.2.0</small>
+</div>
+</aside>
+<main>
+<header>
+<span id="breadcrumb">Workspace / Overview</span>
+<div class="header-right">
+<span class="local-pill">● On this computer</span>
+<button id="connections" class="quiet">Connect agents</button>
+<button id="refresh" class="quiet">↻ Refresh</button>
+</div>
+</header>
+<section class="intro">
+<div>
+<p class="eyebrow">LESS CLUTTER. MORE CONTROL.</p>
+<h1 id="title">One place for your agents.</h1>
+<p id="subtitle">Organize MCPs, skills, and instructions for Codex and Antigravity.</p>
+</div>
+<div class="intro-mark" aria-hidden="true">a<span>•</span>
+</div>
+</section>
+<section id="stats" class="stats" aria-label="Inventory summary">
+</section>
+<div id="issues" role="status">
+</div>
+<section class="library">
+<div class="section-heading">
+<div>
+<h2 id="section-title">Your environment</h2>
+</div>
+<span id="count">
+</span>
+</div>
+<div class="toolbar">
+<label class="search">
+<span aria-hidden="true">⌕</span>
+<input id="search" type="search" placeholder="Search by name, description, or tag…" aria-label="Search items">
+</label>
+<select id="provider" aria-label="Filter by agent">
+<option value="all">All agents</option>
+<option value="codex">Codex</option>
+<option value="antigravity">Antigravity</option>
+<option value="shared">Shared</option>
+</select>
+<select id="scope-filter" aria-label="Filter by scope">
+<option value="all">All scopes</option>
+<option value="global">Global</option>
+<option value="project">Project</option>
+</select>
+</div>
+<div id="list" class="cards" aria-live="polite">
+<p>Loading your environment…</p>
+</div>
+</section>
+<footer>Local files, connected agents. You choose what to send and apply.<span>adsharness / 01</span>
+</footer>
+</main>
+<dialog id="detail">
+<div class="dialog-header">
+<div>
+<p class="eyebrow" id="detail-kind">
+</p>
+<h2 id="detail-title">
+</h2>
+</div>
+<button id="close" class="quiet" aria-label="Close details">✕</button>
+</div>
+<p id="detail-source" class="source">
+</p>
+<div id="detail-info">
+</div>
+<label class="field">Tags <input id="tags" placeholder="research, development, writing">
+</label>
+<button id="save-tags" class="quiet">Save tags</button>
+<section id="document-wrap" hidden>
+  <div class="source-toolbar">
+    <div class="document-tabs" role="group" aria-label="Document mode">
+      <button data-mode="read" class="quiet active">Read source</button>
+      <button data-mode="edit" class="quiet">Edit file</button>
+      <button data-mode="agent" class="quiet">Ask an agent</button>
+    </div>
+    <button id="reveal-original" class="quiet" hidden>Reveal original</button>
+  </div>
+  <p id="source-status" class="editor-note"></p>
+  <div id="read-panel"><pre id="source-viewer" class="source-viewer" tabindex="0" aria-label="Source file contents"></pre></div>
+  <div id="editor-wrap" hidden>
+    <label class="field">File contents<textarea id="editor" spellcheck="false"></textarea></label>
+    <p class="editor-note">Saving updates the original file and creates a local backup. Keep protected markers unchanged.</p>
+    <button id="save-document" class="primary">Save original file</button>
+  </div>
+  <div id="agent-panel" hidden>
+    <div class="agent-options">
+      <label class="field">Agent<select id="edit-agent"><option value="codex">Codex</option><option value="antigravity">Antigravity</option></select></label>
+      <label class="field">Model (optional)<input id="edit-model" placeholder="Use the CLI default" autocomplete="off"></label>
+    </div>
+    <label class="field">Describe the change<textarea id="edit-instruction" placeholder="For example: clarify the setup instructions and add a troubleshooting section."></textarea></label>
+    <p class="editor-note">The saved file is sent to your selected provider. Recognized configuration secrets are masked. Review the proposed diff before changing the original.</p>
+    <div class="agent-actions"><button id="request-edit" class="primary">Generate proposal</button><button id="cancel-edit" class="quiet" hidden>Cancel request</button></div>
+    <p id="agent-progress" role="status"></p>
+    <section id="proposal" hidden>
+      <h3>Review changes</h3><p id="proposal-summary"></p>
+      <pre id="proposal-diff" class="source-viewer" tabindex="0" aria-label="Proposed changes"></pre>
+      <button id="apply-proposal" class="primary">Apply to original file</button>
+    </section>
+  </div>
+</section>
+<p id="detail-message" role="status">
+</p>
+</dialog>
+<dialog id="accounts">
+  <div class="dialog-header"><div><p class="eyebrow">YOUR AGENT ACCOUNTS</p><h2>Connect your agents</h2></div><button id="close-accounts" class="quiet" aria-label="Close agent connections">✕</button></div>
+  <p class="editor-note">Sign in through the official CLI. adsharness does not store your passwords or authentication tokens.</p>
+  <div id="account-list" class="account-list"></div>
+  <section id="auth-progress" hidden>
+    <p id="auth-message" role="status"></p>
+    <a id="auth-link" target="_blank" rel="noopener noreferrer" hidden>Open sign-in page</a>
+    <div id="auth-code-wrap" hidden><span>Device code</span><strong id="auth-code"></strong></div>
+    <button id="cancel-auth" class="quiet" hidden>Cancel operation</button>
+  </section>
+</dialog>
+<div id="toast" role="status" hidden>
+</div>
+<script src="/app.js" defer>
+</script>
+</body>
+</html>

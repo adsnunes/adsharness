@@ -644,3 +644,5 @@ pre {
 #auth-code { font: bold 24px ui-monospace, monospace; letter-spacing: 3px; }
 #auth-link { color: var(--accent); }
 @media(max-width:760px) { .agent-options { grid-template-columns: 1fr; } .header-right { gap: 6px; } header { gap: 6px; } }
+
+#source-picker { width: 100%; min-width: 0; }

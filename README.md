@@ -41,7 +41,7 @@ You can also run `python -m adsharness` directly from the cloned repository with
 
 ## Features
 
-- Real MCP and skill inventory, with agent, scope, and text filters.
+- Real MCP and skill inventory, with agent, scope, and text filters. Shared names appear in one card with provider badges and a source selector; edits affect only the selected file.
 - Persistent favorites and tags, stored separately from agent files.
 - Read original source files with line numbers; edit documents, skills, and JSON/TOML configurations with backups and external-change detection.
 - Connect official agent CLIs and request edits with a reviewable diff before applying.

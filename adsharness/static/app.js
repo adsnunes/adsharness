@@ -1,6 +1,6 @@
 const $ = (s) => document.querySelector(s);
 const labels = {mcp: "MCP server", skill: "Skill", harness: "Harness", instruction: "Instructions"};
-const state = {items: [], view: "all", token: "", selected: null, revision: "", original: "", request: 0, document: null, mode: "read", proposalJob: null, authJob: null};
+const state = {items: [], view: "all", token: "", selected: null, revision: "", original: "", request: 0, document: null, mode: "read", proposalJob: null, authJob: null, sourceBusy: false};
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function api(path, body) {
   const response = await fetch(path, {headers: {"X-adsharness-token": state.token, "Content-Type": "application/json"}, ...(body ? {method: "POST", body: JSON.stringify(body)} : {})});
@@ -19,15 +19,43 @@ async function refresh() {
   } catch (error) { toast(error.message); $("#list").textContent = "Could not load the inventory. Try refreshing."; }
   finally { $("#refresh").disabled = false; }
 }
-function render() {
-  const totals = [["mcp", "MCP servers", "Configured connections"], ["skill", "Available skills", "Knowledge within reach"], ["harness", "Harness settings", "Detected preferences"], ["favorites", "Your favorites", "Keep essentials close"]];
-  $("#stats").innerHTML = totals.map(([kind, title, sub], index) => `<button class="stat" data-stat="${kind}"><span>${title}<b>0${index + 1}</b></span><strong>${state.items.filter(i => kind === "favorites" ? i.favorite : i.kind === kind).length}</strong><small>${sub} ↗</small></button>`).join("");
+function groupKey(item) {
+  return JSON.stringify([item.kind, item.name.trim().toLowerCase(), item.scope.startsWith("project") ? "project" : "global"]);
+}
+function groups() {
+  const byKey = new Map();
+  for (const item of state.items) {
+    const key = groupKey(item);
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(item);
+  }
+  return [...byKey.values()].map(members => ({...members[0], members,
+    favorite: members.some(item => item.favorite),
+    tags: [...new Set(members.flatMap(item => item.tags || []))]
+  }));
+}
+function matchesFilters(item) {
   const query = $("#search").value.toLocaleLowerCase();
   const provider = $("#provider").value;
   const scope = $("#scope-filter").value;
-  const items = state.items.filter(i => (state.view === "all" || (state.view === "favorites" ? i.favorite : state.view === "harness" ? ["harness", "instruction"].includes(i.kind) : i.kind === state.view)) && (provider === "all" || i.provider === provider) && (scope === "all" || i.scope.startsWith(scope)) && [i.name, i.description, ...(i.tags || [])].join(" ").toLocaleLowerCase().includes(query)).sort((a,b) => Number(!!b.favorite) - Number(!!a.favorite) || a.name.localeCompare(b.name));
+  return (provider === "all" || item.provider === provider) &&
+    (scope === "all" || item.scope.startsWith(scope)) &&
+    [item.name, item.description, ...(item.tags || [])].join(" ").toLocaleLowerCase().includes(query);
+}
+function render() {
+  const inventory = groups();
+  const totals = [["mcp", "MCP servers", "Configured connections"], ["skill", "Available skills", "Knowledge within reach"], ["harness", "Harness settings", "Detected preferences"], ["favorites", "Your favorites", "Keep essentials close"]];
+  $("#stats").innerHTML = totals.map(([kind, title, sub], index) => `<button class="stat" data-stat="${kind}"><span>${title}<b>0${index + 1}</b></span><strong>${inventory.filter(i => kind === "favorites" ? i.favorite : i.kind === kind).length}</strong><small>${sub} ↗</small></button>`).join("");
+  const items = inventory.filter(i => (state.view === "all" || (state.view === "favorites" ? i.favorite : state.view === "harness" ? ["harness", "instruction"].includes(i.kind) : i.kind === state.view)) && i.members.some(matchesFilters)).sort((a,b) => Number(!!b.favorite) - Number(!!a.favorite) || a.name.localeCompare(b.name));
   $("#count").textContent = `${items.length} items`;
-  $("#list").innerHTML = items.length ? items.map(i => `<article class="card"><div class="card-top"><span class="item-icon ${i.kind}">${({mcp:"⌘",skill:"◇",harness:"▤",instruction:"≡"})[i.kind]}</span><span class="kind">${labels[i.kind]}</span><button class="star ${i.favorite ? "selected" : ""}" data-favorite="${i.id}" aria-label="${i.favorite ? "Remove from" : "Add to"} favorites: ${escapeHtml(i.name)}" aria-pressed="${!!i.favorite}">${i.favorite ? "★" : "☆"}</button></div><button class="card-title" data-detail="${i.id}">${escapeHtml(i.name)}</button><p class="description">${escapeHtml(i.description)}</p><div class="tags">${(i.tags || []).map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div><div class="card-bottom"><span class="provider ${i.provider}">${escapeHtml(i.provider)}</span><span>${escapeHtml(i.scope)}</span>${i.kind === "mcp" ? `<span class="status">${i.enabled ? "Configured" : "Disabled"}</span>` : ""}</div></article>`).join("") : '<div class="empty"><span>◇</span><h3>No items here yet</h3><p>Try another search or select a different agent. Items come from detected local files.</p></div>';
+  $("#list").innerHTML = items.length ? items.map(i => {
+    const first = i.members.find(matchesFilters);
+    const providers = [...new Set(i.members.map(member => member.provider))];
+    const scopes = [...new Set(i.members.map(member => member.scope))];
+    const enabled = new Set(i.members.map(member => member.enabled));
+    const status = enabled.size > 1 ? "Mixed status" : i.enabled ? "Configured" : "Disabled";
+    return `<article class="card"><div class="card-top"><span class="item-icon ${i.kind}">${({mcp:"⌘",skill:"◇",harness:"▤",instruction:"≡"})[i.kind]}</span><span class="kind">${labels[i.kind]}</span><button class="star ${i.favorite ? "selected" : ""}" data-favorite="${i.id}" aria-label="${i.favorite ? "Remove from" : "Add to"} favorites: ${escapeHtml(i.name)}" aria-pressed="${!!i.favorite}">${i.favorite ? "★" : "☆"}</button></div><button class="card-title" data-detail="${first.id}">${escapeHtml(i.name)}</button><p class="description">${escapeHtml(first.description)}</p><div class="tags">${i.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div><div class="card-bottom">${providers.map(provider => `<span class="provider ${provider}">${escapeHtml(provider)}</span>`).join("")}<span>${escapeHtml(scopes.length === 1 ? scopes[0] : i.scope.startsWith("project") ? "project" : "global")}</span>${i.members.length > 1 ? `<span>${i.members.length} sources</span>` : ""}${i.kind === "mcp" ? `<span class="status">${status}</span>` : ""}</div></article>`;
+  }).join("") : '<div class="empty"><span>◇</span><h3>No items here yet</h3><p>Try another search or select a different agent. Items come from detected local files.</p></div>';
 }
 function setView(view) {
   state.view = view;
@@ -73,6 +101,7 @@ async function loadSource(reveal = false) {
 }
 async function closeDetail(event) {
   event?.preventDefault();
+  if (state.sourceBusy) { toast("Wait for the current save to finish."); return; }
   if (dirty() && !confirm("Discard unsaved changes?")) return;
   if (state.proposalJob && !confirm("Cancel this agent request and close the file?")) return;
   if (state.proposalJob) {
@@ -91,6 +120,15 @@ async function openDetail(id) {
   state.proposalJob = null;
   $("#detail-title").textContent = item.name;
   $("#detail-kind").textContent = `${labels[item.kind]} / ${item.provider}`;
+  const members = state.items.filter(source => groupKey(source) === groupKey(item));
+  $("#source-picker-wrap").hidden = members.length < 2;
+  $("#source-picker").replaceChildren(...members.map(source => {
+    const option = document.createElement("option");
+    option.value = source.id;
+    option.textContent = `${source.provider} · ${source.scope} · ${source.source}`;
+    option.selected = source.id === id;
+    return option;
+  }));
   $("#detail-source").textContent = item.source;
   $("#tags").value = (item.tags || []).join(", ");
   $("#detail-message").textContent = "";
@@ -102,7 +140,7 @@ async function openDetail(id) {
   $("#request-edit").disabled = false;
   $("#cancel-edit").hidden = true;
   showMode("read");
-  $("#detail").showModal();
+  if (!$("#detail").open) $("#detail").showModal();
   try { await loadSource(); }
   catch (error) { $("#detail-message").textContent = error.message; }
 }
@@ -112,10 +150,28 @@ document.addEventListener("click", async (event) => {
   const favorite = event.target.closest("[data-favorite]");
   if (favorite) {
     favorite.disabled = true;
-    const item = state.items.find(i => i.id === favorite.dataset.favorite);
-    try { await api("/api/organize", {id:item.id, favorite:!item.favorite, tags:item.tags || []}); await refresh(); }
+    const group = groups().find(i => i.id === favorite.dataset.favorite);
+    try {
+      for (const item of group.members) {
+        await api("/api/organize", {id:item.id, favorite:!group.favorite, tags:item.tags || []});
+      }
+      await refresh();
+    }
     catch (error) { toast(error.message); favorite.disabled = false; }
   }
+});
+$("#source-picker").addEventListener("change", async event => {
+  const id = event.target.value;
+  if (state.proposalJob || state.sourceBusy) {
+    event.target.value = state.selected.id;
+    toast("Finish or cancel the current operation before switching sources.");
+    return;
+  }
+  if ((dirty() || !$("#proposal").hidden) && !confirm("Discard unsaved edits and the current proposal to switch sources?")) {
+    event.target.value = state.selected.id;
+    return;
+  }
+  await openDetail(id);
 });
 $("#search").addEventListener("input", render);
 $("#provider").addEventListener("change", render);
@@ -130,10 +186,11 @@ $("#save-tags").addEventListener("click", async () => {
 });
 $("#save-document").addEventListener("click", async () => {
   const content = $("#editor").value;
+  state.sourceBusy = true;
   $("#save-document").disabled = true;
   try { const result = await api("/api/document", {id:state.selected.id, revision:state.revision, content, reveal:!!state.document?.revealed}); await loadSource(!!state.document?.revealed); $("#detail-message").textContent = `Saved. Backup: ${result.backup}`; await refresh(); }
   catch (error) { $("#detail-message").textContent = error.message; }
-  finally { $("#save-document").disabled = false; }
+  finally { state.sourceBusy = false; $("#save-document").disabled = false; }
 });
 window.addEventListener("beforeunload", event => { if ($("#detail").open && (dirty() || state.proposalJob)) { event.preventDefault(); event.returnValue = ""; } });
 (async () => { try { state.token = (await api("/api/session")).token; await refresh(); } catch (error) { toast(error.message); } })();
@@ -236,6 +293,7 @@ $("#request-edit").addEventListener("click", async () => {
 $("#cancel-edit").addEventListener("click", async () => { try { if (state.proposalJob) await api("/api/agents/cancel", {job_id:state.proposalJob}); } catch (error) { toast(error.message); } });
 $("#apply-proposal").addEventListener("click", async () => {
   if (dirty()) { $("#agent-progress").textContent = "Save or discard your manual edits before applying this proposal."; return; }
+  state.sourceBusy = true;
   $("#apply-proposal").disabled = true;
   try {
     const result = await api("/api/agents/apply", {job_id:$("#apply-proposal").dataset.job});
@@ -244,4 +302,5 @@ $("#apply-proposal").addEventListener("click", async () => {
     await loadSource();
     await refresh();
   } catch (error) { $("#agent-progress").textContent = error.message; $("#apply-proposal").disabled = false; }
+  finally { state.sourceBusy = false; }
 });

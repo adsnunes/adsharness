@@ -18,28 +18,28 @@ Screenshots use synthetic demo data and contain no personal configurations or cr
 
 ## Getting started
 
-Requires Python 3.11 or later:
+Requires Python 3.11 or later. Run these commands from the cloned repository using your preferred Python environment. The examples use `python`; substitute `python3` or `py` if that is your interpreter's command.
 
-```sh
-python3 -m adsharness
-```
-
-Open http://localhost:4317. On macOS, check `python3 --version`: the system Python may be too old. Use your installed Python 3.11+ executable when necessary. To include a project's files:
-
-```sh
-python3 -m adsharness --workspace /path/to/project
-```
-
-Alternative port: `python3 -m adsharness --port 4320`.
-
-Optional installation in a virtual environment:
-
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
+```text
 python -m pip install .
-adsharness
+python -m adsharness
 ```
+
+Open the local URL printed by the application in your browser (default: [localhost:4317](http://localhost:4317)).
+
+To include a project's agent instructions and configuration, replace `path/to/project` with its directory:
+
+```text
+python -m adsharness --workspace "path/to/project"
+```
+
+To choose another port:
+
+```text
+python -m adsharness --port 4320
+```
+
+You can also run `python -m adsharness` directly from the cloned repository without installing the package. A virtual environment is recommended; create and activate it using your preferred environment manager.
 
 ## Features
 

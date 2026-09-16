@@ -6,8 +6,6 @@ A local workspace for organizing MCPs, skills, and instructions for Codex and An
 
 ## Screenshots
 
-Screenshots use synthetic demo data and contain no personal configurations or credentials.
-
 **Organize MCP servers, skills, and harness settings in one place.**
 
 ![adsharness overview with agent filters, favorites, and a local configuration inventory](docs/images/overview.png)

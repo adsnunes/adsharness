@@ -31,7 +31,7 @@ class SourceTests(Fixture):
         doc = self.catalog.document(ident)
         self.assertNotIn("SECRET_", doc["content"])
         self.assertTrue(doc["masked"])
-        self.assertEqual(self.catalog.document(ident, reveal=True)["content"], (self.home / ".codex/config.toml").read_text())
+        self.assertEqual(self.catalog.document(ident, reveal=True)["content"], (self.home / ".codex/config.toml").read_bytes().decode("utf-8"))
 
     def test_masked_edit_preserves_secrets_comments_and_unknown_fields(self):
         path = self.home / ".codex/config.toml"

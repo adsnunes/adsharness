@@ -82,7 +82,7 @@ class CatalogTests(Fixture):
         self.assertNotEqual(result["revision"], old["revision"])
         self.assertEqual(self.catalog.document(item["id"])["content"], "New content")
         backups = list((self.home / "state/backups").glob("*.md"))
-        self.assertEqual(backups[0].read_text(), old["content"])
+        self.assertEqual(backups[0].read_bytes(), old["content"].encode("utf-8"))
         with self.assertRaises(ValueError):
             self.catalog.save_document(item["id"], old["revision"], "Stale edit")
 

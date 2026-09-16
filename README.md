@@ -4,6 +4,18 @@ A local workspace for organizing MCPs, skills, and instructions for Codex and An
 
 **Status: local preview (0.2.0).** The inventory and editor use only the Python standard library. Optional AI editing uses your authenticated Codex or Antigravity CLI. All application copy and project documentation are in English.
 
+## Screenshots
+
+Screenshots use synthetic demo data and contain no personal configurations or credentials.
+
+**Organize MCP servers, skills, and harness settings in one place.**
+
+![adsharness overview with agent filters, favorites, and a local configuration inventory](docs/images/overview.png)
+
+**Read original skill files in the built-in source viewer.**
+
+![adsharness source viewer displaying a demonstration code-review skill with line numbers](docs/images/source-viewer.png)
+
 ## Getting started
 
 Requires Python 3.11 or later:
